@@ -1,0 +1,62 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+import numpy as np
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+
+sales_train = pd.read_csv('sales_train.csv')
+item_cat = pd.read_csv('item_categories.csv')
+items = pd.read_csv('items.csv')
+shops = pd.read_csv('shops.csv')
+sample_submission = pd.read_csv('sample_submission.csv')
+test = pd.read_csv('test.csv')
+
+#Data Audit
+sales_train.head()
+item_cat.head()
+sales_train.tail()
+sales_train.shape
+sales_train.columns
+sales_train.info()
+sales_train.isna() .sum()
+sales_train.describe() .round()
+
+# Exploratory Data Analysis
+sales_train["date"]= pd.to_datetime(sales_train["date"], format='%d.%m.%Y')
+sales_train.sort_values(by="date", ascending=True, inplace=True)
+sales_train.head()
+sales_train['month_year'] = sales_train['date'].apply(lambda x: x.strftime('%Y-%m'))
+sales_train_temp = sales_train.groupby('month_year').sum()['item_cnt_day'].reset_index()
+
+# Sales per Item
+sales_train['sales_item'] = sales_train['item_cnt_day'] * sales_train['item_price']
+sales_train.head()
+
+#Graph
+plt.figure(figsize=(16, 5))
+plt.plot(sales_train_temp['month_year'], sales_train_temp['item_cnt_day'], color='#FF0000')
+plt.xticks(rotation='vertical', size=8)
+plt.show()
+
+sales_train_temp = sales_train.groupby('month_year').sum()['sales_item'].reset_index()
+plt.figure(figsize=(16, 5))
+plt.plot(sales_train_temp['month_year'], sales_train_temp['sales_item'], color='#0000FF')
+plt.xticks(rotation='vertical', size=8)
+plt.show()
+
+shope_sum_temp = sales_train.groupby('shop_id').sum()['item_cnt_day'].reset_index()
+plt.figure(figsize=(16, 5))
+plt.bar(shope_sum_temp['shop_id'], shope_sum_temp['item_cnt_day'], color=['#0000FF', '#00FF00', '#FFFF00', '#FF7F00', '#9400D3'])
+plt.show()
+cat_sum_temp = result.groupby('item_category_id').sum()['item_cnt_day'].reset_index()
+
+#Heat Map
+plt.figure(figsize=(16,5))
+sns.heatmap(sales_train.corr(),annot=True,cmap='Reds')
+
+#Top Shops
+top10shops = pd.DataFrame(sales_train.groupby('shop_id').sum()['item_cnt_day'])
+top10shops.sort_values(by=['item_cnt_day'], inplace=True, ascending=False)
+top10shops[:10]
